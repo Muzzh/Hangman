@@ -34,7 +34,7 @@ def play(working_list):
     #mother function
     hangman = prep_hang(working_list)
     session = 0
-    max_tries = 3
+    max_tries = 10
     letters_used = []
     while session < max_tries:
         clue = prep_clue(hangman)
@@ -44,13 +44,16 @@ def play(working_list):
         clue = prep_clue(hangman)
         session += 1
         print 'This is the letters you have found:\n{}'.format(''.join(clue))
-        ready = ask_for_final_answer()
-        if ready == 'yes':
-            ask_solution(hangman)
+        if session <= (max_tries -1):
+            ready = ask_for_final_answer()
+            if ready == 'yes':
+                ask_solution(hangman)
+            else:
+                None
         else:
             None
     ask_solution(hangman)
-    restart()
+    restart(working_list)
 
 def prep_clue(hangman):
     #prepares just the clue and updated clues
@@ -61,13 +64,20 @@ def prep_clue(hangman):
 
 def get_letter(clue, attempts, letters_used):
     #ask for a letter providing the clue and updated clue each time
+    last_try = 1
     print '\nFind this word!'
     print ''.join(clue)
     used = '-'.join(letters_used)
-    letter = raw_input('''Choose a letter you think might be in this hidden word\expression
-    You have {} tries left
-    These are the letters you've already asked for: {}
-    >  '''.format(attempts, used))
+    if attempts == last_try:
+        letter = raw_input('''Choose a letter you think might be in this hidden word\expression
+        LAST TRY !!!!
+        These are the letters you've already asked for: {}
+        >  '''.format(used))
+    else:
+        letter = raw_input('''Choose a letter you think might be in this hidden word\expression
+        You have {} tries left
+        These are the letters you've already asked for: {}
+        >  '''.format(attempts, used))
     return letter
 
 def check_letter(hangman, letter):
@@ -96,14 +106,15 @@ def ask_solution(hangman):
     for couple in hangman:
         solution.append(couple[0])
     solution = ''.join(solution)
-    answer = raw_input('Can you provide the full word\expression?\n> ')
+    answer = raw_input('What is the answer?\n> ')
     if answer == solution:
         print 'Congratulations !! You found the word!'
     else:
         print 'NOOOO! You failed to prevent the Hangman from killing an innocent person!! :('
-        print 'The correct answer was'.format(solution)
+        print 'The correct answer was ***{}***'.format(solution)
 
-def restart():
+def restart(working_list):
+    #ask user to do another word, if no ask to go back to main menu
     redo = raw_input('Another try? [Y/N]\n> ')
     if redo.lower() == 'n':
         menu = raw_input('Would you like to go back to the main menu? [Y/N]\n> ')
@@ -115,11 +126,9 @@ def restart():
             print 'Please answer Y or N'
             restart()
     elif redo.lower() == 'y':
-        play(hangman)
+        play(working_list)
     else:
         None
-
-
 
 def main():
     choice = raw_input('''
