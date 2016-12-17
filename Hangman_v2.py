@@ -3,10 +3,9 @@
 import sys
 import random
 
-def get_word():
-    words = []
+def create_list(file):
     pulled_list = []
-    with open('englishwords.txt') as f:
+    with open(file) as f:
         lines = f.read().split('\n')
         random.shuffle(lines)
         for line in lines:
@@ -14,17 +13,23 @@ def get_word():
                 pulled_list.append(line)
             else:
                 None
-    while len(words) <= 15:
-        words.append(pulled_list.pop(-1))
-    return words.pop(-1)
+    working_list = []
+    max_lenght_of_word_list = 500
+    while len(working_list) <= max_lenght_of_word_list:
+        working_list.append(pulled_list.pop(-1))
+    return working_list
 
-def prep_hang():
-    word = get_word()
-    word_list = list(word)
+def prep_hang(working_list):
+    word = working_list.pop(-1)
+    print word
+    letter_list = list(word)
     hang_dict = []
-    for letter in word_list:
+    for letter in letter_list:
         hang_dict.append([letter, '_ '])
     return hang_dict
+
+#def play(list):
+#    hangman =
 
 def get_letter():
     letter = raw_input('Choose a letter you think might be in this hidden word\expression\n> ')
@@ -32,9 +37,9 @@ def get_letter():
 
 def check_letter():
     hangman = prep_hang()
+    print hangman
     session = 0
     clue = []
-    tried_letters = []
     for couple in hangman:
         clue.append(couple[1])
     print '\nFind this word!'
@@ -42,12 +47,7 @@ def check_letter():
     while session <= 4:
         session += 1
         print 'You have {} attempts left !'.format((6 - session))
-        if len(tried_letters) > 0:
-            print 'So far, you have tried these letters: {}'.format('-'.join(tried_letters))
-        else:
-            None
         letter = get_letter()
-        tried_letters.append(letter)
         for item in hangman:
             if item[0] == letter:
                 item[1] = item[0] + ' '
@@ -58,10 +58,9 @@ def check_letter():
             clue.append(couple[1])
         print '\nFind this word!'
         print ''.join(clue)
-
     return hangman
 
-def verify():
+def verify_answer():
     hangman = check_letter()
     solution = []
     for couple in hangman:
@@ -72,7 +71,6 @@ def verify():
         print 'Congratulations !! You found the word!'
     else:
         print 'NOOOO! You failed to prevent the Hangman from killing an innocent person!! :('
-        print 'The answer was: {}'.format(solution)
     redo = raw_input('Another try ?\n[Y/N]> ')
     if redo.lower() == 'n':
         sys.exit(0)
@@ -85,11 +83,15 @@ def main():
     choice = raw_input('''
         Welcome to Basic Hangman!
         Select a category:
-        1. words
+        1. Words
         q. Leave the game :(
         >''')
     if choice == '1':
-        verify()
+        word_list = create_list('englishwords.txt')
+        hangman = prep_hang(word_list)
+
+        print hangman
+#        verify()
     elif choice == 'q':
         sys.exit(0)
     else:
