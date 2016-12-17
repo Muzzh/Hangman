@@ -23,41 +23,48 @@ def prep_hang(working_list):
     word = working_list.pop(-1)
     print word
     letter_list = list(word)
-    hang_dict = []
+    hangman = []
     for letter in letter_list:
-        hang_dict.append([letter, '_ '])
-    return hang_dict
+        hangman.append([letter, '_ '])
+    return hangman
 
-#def play(list):
-#    hangman =
-
-def get_letter():
-    letter = raw_input('Choose a letter you think might be in this hidden word\expression\n> ')
-    return letter
-
-def check_letter():
-    hangman = prep_hang()
-    print hangman
-    session = 0
+def prep_clue(hangman):
     clue = []
     for couple in hangman:
         clue.append(couple[1])
+    return clue
+
+
+def play(working_list):
+    hangman = prep_hang(working_list)
+    print hangman
+    session = 0
+    max_tries = 3
+    while session < max_tries:
+        clue = prep_clue(hangman)
+        letter = get_letter(clue, (max_tries - session))
+        new_hangman = check_letter(hangman, letter)
+        clue = prep_clue(new_hangman)
+        session += 1
+
+
+def get_letter(clue, attempts):
     print '\nFind this word!'
     print ''.join(clue)
-    while session <= 4:
-        session += 1
-        print 'You have {} attempts left !'.format((6 - session))
-        letter = get_letter()
-        for item in hangman:
-            if item[0] == letter:
-                item[1] = item[0] + ' '
-            else:
-                None
-        clue = []
-        for couple in hangman:
-            clue.append(couple[1])
-        print '\nFind this word!'
-        print ''.join(clue)
+    letter = raw_input('''Choose a letter you think might be in this hidden word\expression
+    You have {} tries left
+    >  '''.format(attempts))
+    return letter
+
+def check_letter(hangman, letter):
+    for item in hangman:
+        if item[0] == letter:
+            item[1] = item[0] + ' '
+        else:
+            None
+    #clue = []
+    #for couple in hangman:
+    #    clue.append(couple[1])
     return hangman
 
 def verify_answer():
@@ -75,7 +82,7 @@ def verify_answer():
     if redo.lower() == 'n':
         sys.exit(0)
     elif redo.lower() == 'y':
-        main()
+        play()
     else:
         None
 
@@ -87,10 +94,8 @@ def main():
         q. Leave the game :(
         >''')
     if choice == '1':
-        word_list = create_list('englishwords.txt')
-        hangman = prep_hang(word_list)
-
-        print hangman
+        working_list = create_list('englishwords.txt')
+        play(working_list)
 #        verify()
     elif choice == 'q':
         sys.exit(0)
