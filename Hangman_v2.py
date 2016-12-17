@@ -135,6 +135,7 @@ def main():
         Welcome to Basic Hangman!
         Select a category:
         1. Words
+        2. Idioms
         q. Leave the game :(
         >''')
     if choice == '1':
