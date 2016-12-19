@@ -3,10 +3,10 @@
 import sys
 import random
 
-def get_word():
-    words = []
+def create_list(file):
+    #creates the list from provided file
     pulled_list = []
-    with open('englishwords.txt') as f:
+    with open(file) as f:
         lines = f.read().split('\n')
         random.shuffle(lines)
         for line in lines:
@@ -14,70 +14,119 @@ def get_word():
                 pulled_list.append(line)
             else:
                 None
-    while len(words) <= 15:
-        words.append(pulled_list.pop(-1))
-    return words.pop(-1)
+    working_list = []
+    max_lenght_of_word_list = 500
+    while len(working_list) <= max_lenght_of_word_list:
+        working_list.append(pulled_list.pop(-1))
+    return working_list
 
-def prep_hang():
-    word = get_word()
-    word_list = list(word)
-    hang_dict = []
-    for letter in word_list:
-        hang_dict.append([letter, '_ '])
-    return hang_dict
-
-def get_letter():
-    letter = raw_input('Choose a letter you think might be in this hidden word\expression\n> ')
-    return letter
-
-def check_letter():
-    hangman = prep_hang()
-    session = 0
-    clue = []
-    tried_letters = []
-    for couple in hangman:
-        clue.append(couple[1])
-    print '\nFind this word!'
-    print ''.join(clue)
-    while session <= 4:
-        session += 1
-        print 'You have {} attempts left !'.format((6 - session))
-        if len(tried_letters) > 0:
-            print 'So far, you have tried these letters: {}'.format('-'.join(tried_letters))
-        else:
-            None
-        letter = get_letter()
-        tried_letters.append(letter)
-        for item in hangman:
-            if item[0] == letter:
-                item[1] = item[0] + ' '
-            else:
-                None
-        clue = []
-        for couple in hangman:
-            clue.append(couple[1])
-        print '\nFind this word!'
-        print ''.join(clue)
-
+def prep_hang(working_list):
+    #prepares a list containing lists of letter-clue couples
+    word = working_list.pop(-1)
+    letter_list = list(word)
+    hangman = []
+    for letter in letter_list:
+        hangman.append([letter, '_ '])
     return hangman
 
-def verify():
-    hangman = check_letter()
+
+def play(working_list):
+    #mother function
+    hangman = prep_hang(working_list)
+    session = 0
+    max_tries = 10
+    letters_used = []
+    while session < max_tries:
+        clue = prep_clue(hangman)
+        letter = get_letter(clue, (max_tries - session), letters_used)
+        letters_used.append(letter)
+        hangman = check_letter(hangman, letter)
+        clue = prep_clue(hangman)
+        session += 1
+        print 'This is the letters you have found:\n{}'.format(''.join(clue))
+        if session <= (max_tries -1):
+            ready = ask_for_final_answer()
+            if ready == 'yes':
+                ask_solution(hangman)
+            else:
+                None
+        else:
+            None
+    ask_solution(hangman)
+    restart(working_list)
+
+def prep_clue(hangman):
+    #prepares just the clue and updated clues
+    clue = []
+    for couple in hangman:
+        clue.append(couple[1])
+    return clue
+
+def get_letter(clue, attempts, letters_used):
+    #ask for a letter providing the clue and updated clue each time
+    last_try = 1
+    print '\nFind this word!'
+    print ''.join(clue)
+    used = '-'.join(letters_used)
+    if attempts == last_try:
+        letter = raw_input('''Choose a letter you think might be in this hidden word\expression
+        LAST TRY !!!!
+        These are the letters you've already asked for: {}
+        >  '''.format(used))
+    else:
+        letter = raw_input('''Choose a letter you think might be in this hidden word\expression
+        You have {} tries left
+        These are the letters you've already asked for: {}
+        >  '''.format(attempts, used))
+    return letter
+
+def check_letter(hangman, letter):
+    #verify the letter provided and changes the associated letter if correct
+    for item in hangman:
+        if item[0] == letter:
+            item[1] = item[0] + ' '
+        else:
+            None
+    return hangman
+
+def ask_for_final_answer():
+    #ask user if ready to give the final answer
+    final = raw_input('Are you ready to give your final answer? [Y\N]\n> ')
+    if final.lower() == 'y':
+        return 'yes'
+    elif final.lower() == 'n':
+        return 'NOT READY!!!!!!'
+    else:
+        print 'Please answer Y or N!'
+        ask_for_final_answer()
+
+def ask_solution(hangman):
+    #checks if the final answer provided is == to the hangman
     solution = []
     for couple in hangman:
         solution.append(couple[0])
     solution = ''.join(solution)
-    answer = raw_input('Can you provide the full word\expression?\n> ')
+    answer = raw_input('What is the answer?\n> ')
     if answer == solution:
         print 'Congratulations !! You found the word!'
     else:
         print 'NOOOO! You failed to prevent the Hangman from killing an innocent person!! :('
-        print 'The answer was: {}'.format(solution)
-    redo = raw_input('Another try ?\n[Y/N]> ')
+        print 'The correct answer was ***{}***'.format(solution)
+
+def restart(working_list):
+    #ask user to do another word, if no ask to go back to main menu
+    redo = raw_input('Another try? [Y/N]\n> ')
     if redo.lower() == 'n':
-        sys.exit(0)
+        menu = raw_input('Would you like to go back to the main menu? [Y/N]\n> ')
+        if menu.lower() == 'y':
+            main()
+        elif menu.lower() == 'n':
+            sys.exit(0)
+        else:
+            print 'Please answer Y or N'
+            restart()
     elif redo.lower() == 'y':
-        main()
+        play(working_list)
     else:
         None
 
@@ -85,11 +134,12 @@ def main():
     choice = raw_input('''
         Welcome to Basic Hangman!
         Select a category:
-        1. words
+        1. Words
         q. Leave the game :(
         >''')
     if choice == '1':
-        verify()
+        working_list = create_list('englishwords.txt')
+        play(working_list)
     elif choice == 'q':
         sys.exit(0)
     else:
