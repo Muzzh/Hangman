@@ -11,13 +11,19 @@ def create_list(file):
         random.shuffle(lines)
         for line in lines:
             if len(line) >= 8:
-                pulled_list.append(line)
+                line = str(line)
+                pulled_list.append(str(line))
             else:
                 None
     working_list = []
-    max_lenght_of_word_list = 500
+    max_lenght_of_word_list = 20
     while len(working_list) <= max_lenght_of_word_list:
-        working_list.append(pulled_list.pop(-1))
+        while len(pulled_list) > 0:
+            working_list.append(pulled_list.pop(-1))
+        else:
+            None
+    else:
+        None
     return working_list
 
 def prep_hang(working_list):
@@ -26,13 +32,17 @@ def prep_hang(working_list):
     letter_list = list(word)
     hangman = []
     for letter in letter_list:
-        hangman.append([letter, '_ '])
+        if letter == ' ':
+            hangman.append([letter, ' *  '])
+        else:
+            hangman.append([letter, '_ '])
     return hangman
 
 
 def play(working_list):
     #mother function
     hangman = prep_hang(working_list)
+    print hangman
     session = 0
     max_tries = 10
     letters_used = []
@@ -48,11 +58,11 @@ def play(working_list):
             ready = ask_for_final_answer()
             if ready == 'yes':
                 ask_solution(hangman)
+                break
             else:
                 None
         else:
-            None
-    ask_solution(hangman)
+            ask_solution(hangman)
     restart(working_list)
 
 def prep_clue(hangman):
@@ -83,7 +93,7 @@ def get_letter(clue, attempts, letters_used):
 def check_letter(hangman, letter):
     #verify the letter provided and changes the associated letter if correct
     for item in hangman:
-        if item[0] == letter:
+        if item[0].lower() == letter:
             item[1] = item[0] + ' '
         else:
             None
@@ -107,7 +117,7 @@ def ask_solution(hangman):
         solution.append(couple[0])
     solution = ''.join(solution)
     answer = raw_input('What is the answer?\n> ')
-    if answer == solution:
+    if answer.lower() == solution.lower():
         print 'Congratulations !! You found the word!'
     else:
         print 'NOOOO! You failed to prevent the Hangman from killing an innocent person!! :('
@@ -135,10 +145,14 @@ def main():
         Welcome to Basic Hangman!
         Select a category:
         1. Words
+        2. Idioms
         q. Leave the game :(
         >''')
     if choice == '1':
         working_list = create_list('englishwords.txt')
+        play(working_list)
+    elif choice == '2':
+        working_list = create_list('idioms.txt')
         play(working_list)
     elif choice == 'q':
         sys.exit(0)
